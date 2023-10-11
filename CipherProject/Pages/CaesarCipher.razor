@@ -1,35 +1,161 @@
-﻿@page "/caesarcipher"
-
-<h3>CaesarCipher</h3>
-
-
-<div>
+﻿@*@page "/caesarcipher"
+@using CipherProject.Data;
+@using System;
+@using System.Text;
 
 
-</div>
+<h3>Szyfr Cezara</h3>
 
+<input @bind="inputText" placeholder="Wprowadź tekst">
 
+<label>Przesunięcie: </label>
+<input type="number" @bind="shiftAmount">
 
+<button @onclick="EncryptText">Zaszyfruj</button>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+<p>Zaszyfrowany tekst: @encryptedText</p>
 
 
 
 @code {
+    @code {
+        private string inputText = "";
+        private int shiftAmount;
+        private string encryptedText = "";
+        private CharactersList charactersList = new CharactersList();
+
+        private void EncryptText()
+        {
+            encryptedText = CaesarCipherFun(inputText, shiftAmount);
+        }
+
+        private string CaesarCipherFun(string text, int shift)
+        {
+            StringBuilder result = new StringBuilder();
+
+            foreach (char character in text)
+            {
+                string characterString = character.ToString();
+                if (charactersList.PolishCharacters.Contains(characterString))
+                {
+                    int index = charactersList.PolishCharacters.IndexOf(characterString);
+                    int newIndex = (index + shift) % charactersList.PolishCharacters.Count;
+                    if (newIndex < 0)
+                    {
+                        newIndex += charactersList.PolishCharacters.Count;
+                    }
+                    result.Append(charactersList.PolishCharacters[newIndex]);
+                }
+                else
+                {
+                    result.Append(character);
+                }
+            }
+
+            return result.ToString();
+        }
+
+    }
 
 }
+*@
+@page "/caesarcipher"
+@using CipherProject.Data;
+@using System;
+@using System.Text;
+
+<h3>Szyfr Cezara</h3>
+
+<input @bind="inputText" placeholder="Wprowadź tekst">
+
+<label>Przesunięcie: </label>
+<input type="number" @bind="shiftAmount">
+
+<button @onclick="EncryptText">Zaszyfruj</button>
+<button @onclick="DecryptText">Odszyfruj</button>
+
+<p>
+    <strong>Wynik:</strong> @outputText
+</p>
+
+@code {
+    private string inputText = "";
+    private int shiftAmount = 0;
+    private string originalText = "";
+    private string outputText = "";
+    private CharactersList charactersList = new CharactersList();
+    private bool isDecryptMode = false;
+
+    private void EncryptText()
+    {
+        if (isDecryptMode)
+        {
+            originalText = inputText;
+        }
+        outputText = isDecryptMode ? CaesarDecipherFun(originalText, shiftAmount) : CaesarCipherFun(inputText, shiftAmount);
+    }
+
+    private void DecryptText()
+    {
+        isDecryptMode = true;
+        originalText = inputText;
+        outputText = CaesarDecipherFun(originalText, shiftAmount);
+    }
+
+    private string CaesarCipherFun(string text, int shift)
+    {
+        StringBuilder result = new StringBuilder();
+
+        int listSize = charactersList.PolishCharacters.Count;
+
+        foreach (char character in text)
+        {
+            string characterString = character.ToString();
+            int index = charactersList.PolishCharacters.IndexOf(characterString.ToLower());
+
+            if (index >= 0)
+            {
+                int newIndex = (index + shift) % listSize;
+                if (newIndex < 0)
+                {
+                    newIndex += listSize;
+                }
+                result.Append(charactersList.PolishCharacters[newIndex]);
+            }
+            else
+            {
+                result.Append(character);
+            }
+        }
+
+        return result.ToString();
+    }
+
+    private string CaesarDecipherFun(string text, int shift)
+    {
+        StringBuilder result = new StringBuilder();
+
+        int listSize = charactersList.PolishCharacters.Count;
+
+        foreach (char character in text)
+        {
+            string characterString = character.ToString();
+            int index = charactersList.PolishCharacters.IndexOf(characterString.ToLower());
+
+            if (index >= 0)
+            {
+                int newIndex = (index - shift + listSize) % listSize;
+                result.Append(charactersList.PolishCharacters[newIndex]);
+            }
+            else
+            {
+                result.Append(character);
+            }
+        }
+
+        return result.ToString();
+    }
+}
+
+
+
