@@ -1,0 +1,89 @@
+﻿@page "/polybiuscipher"
+@using CipherProject.Data;
+@using System;
+@using System.Text;
+
+<h3>Szyfr Polibiusza</h3>
+
+<input @bind="inputText" placeholder="Wprowadź tekst">
+
+<button @onclick="EncryptText">Zaszyfruj</button>
+<button @onclick="DecryptText">Odszyfruj</button>
+
+<p>
+    <strong>Wynik:</strong> @outputText
+</p>
+
+@code {
+    private string inputText = "";
+    private string outputText = "";
+    private CharactersList charactersList = new CharactersList();
+
+    private void EncryptText()
+    {
+        outputText = PolibiusCipherFun(inputText);
+    }
+
+    private void DecryptText()
+    {
+        outputText = PolibiusDecipherFun(inputText);
+    }
+
+    private string PolibiusCipherFun(string text)
+    {
+        StringBuilder result = new StringBuilder();
+
+        foreach (char character in text)
+        {
+            string characterString = character.ToString().ToLower(); // Zamiana na małe litery
+            int index = charactersList.PolishCharacters.IndexOf(characterString);
+
+            if (index >= 0)
+            {
+                int row = index / 8;
+                int col = index % 8;
+                result.Append($"{row + 1}{col + 1} "); // +1, aby indeksować od 1
+            }
+            else if (character == ' ') // Pozostawia spacje bez zmian
+            {
+                result.Append(" ");
+            }
+        }
+
+        return result.ToString();
+    }
+
+    private string PolibiusDecipherFun(string text)
+    {
+        StringBuilder result = new StringBuilder();
+        string[] parts = text.Split(' ');
+
+        foreach (string part in parts)
+        {
+            if (part != " ")
+            {
+                int row = part[0] - '0' - 1; // Odzyskaj wiersz
+                int col = part[1] - '0' - 1; // Odzyskaj kolumnę
+
+                if (row >= 0 && row < 4 && col >= 0 && col < 8)
+                {
+                    int index = row * 8 + col;
+                    result.Append(charactersList.PolishCharacters[index]);
+                }
+                else
+                {
+                    result.Append(" "); // Obsługuje spacje
+                }
+            }
+            else
+            {
+                result.Append(" "); // Pozostawia spacje bez zmian
+            }
+        }
+
+        return result.ToString();
+    }
+}
+
+
+
