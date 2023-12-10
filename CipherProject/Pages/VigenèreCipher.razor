@@ -1,0 +1,93 @@
+﻿@page "/vigenerecipher"
+@using CipherProject.Data;
+@using System;
+@using System.Text;
+
+<h3>Szyfr Vigenère'a</h3>
+
+<input @bind="inputText" placeholder="Wprowadź tekst">
+<input @bind="key" placeholder="Wprowadź klucz">
+
+<button @onclick="EncryptText">Zaszyfruj</button>
+<button @onclick="DecryptText">Odszyfruj</button>
+
+<p>
+    <strong>Wynik:</strong> @outputText
+</p>
+
+@code {
+    private string inputText = "";
+    private string outputText = "";
+    private string key = "";
+    private CharactersList charactersList = new CharactersList();
+
+    private void EncryptText()
+    {
+        outputText = VigenereCipherFun(inputText, key);
+    }
+
+    private void DecryptText()
+    {
+        outputText = VigenereDecipherFun(inputText, key);
+    }
+
+    private string VigenereCipherFun(string text, string key)
+    {
+        StringBuilder result = new StringBuilder();
+
+        for (int i = 0; i < text.Length; i++)
+        {
+            char character = text[i];
+            if (character != ' ')
+            {
+                string characterString = character.ToString().ToLower();
+                int index = charactersList.PolishCharacters.IndexOf(characterString);
+
+                if (index >= 0)
+                {
+                    char keyChar = key[i % key.Length];
+                    int shift = charactersList.PolishCharacters.IndexOf(keyChar.ToString().ToLower());
+
+                    int newIndex = (index + shift) % charactersList.PolishCharacters.Count;
+                    result.Append(charactersList.PolishCharacters[newIndex]);
+                }
+            }
+            else
+            {
+                result.Append(" ");
+            }
+        }
+
+        return result.ToString();
+    }
+
+    private string VigenereDecipherFun(string text, string key)
+    {
+        StringBuilder result = new StringBuilder();
+
+        for (int i = 0; i < text.Length; i++)
+        {
+            char character = text[i];
+            if (character != ' ')
+            {
+                string characterString = character.ToString().ToLower();
+                int index = charactersList.PolishCharacters.IndexOf(characterString);
+
+                if (index >= 0)
+                {
+                    char keyChar = key[i % key.Length];
+                    int shift = charactersList.PolishCharacters.IndexOf(keyChar.ToString().ToLower());
+
+                    int newIndex = (index - shift + charactersList.PolishCharacters.Count) % charactersList.PolishCharacters.Count;
+                    result.Append(charactersList.PolishCharacters[newIndex]);
+                }
+            }
+            else
+            {
+                result.Append(" ");
+            }
+        }
+
+        return result.ToString();
+    }
+}

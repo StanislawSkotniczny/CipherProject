@@ -1,0 +1,176 @@
+﻿@page "/playfaircipher"
+@using CipherProject.Data;
+@using System;
+@using System.Text;
+
+<h3>Szyfr Playfaira</h3>
+
+<input @bind="inputText" placeholder="Wprowadź tekst">
+<input @bind="key" placeholder="Wprowadź klucz">
+
+<button @onclick="EncryptText">Zaszyfruj</button>
+<button @onclick="DecryptText">Odszyfruj</button>
+
+<p>
+    <strong>Wynik:</strong> @outputText
+</p>
+
+@code {
+    private string inputText = "";
+    private string outputText = "";
+    private string key = "";
+    private CharactersList charactersList = new CharactersList();
+
+    private void EncryptText()
+    {
+        outputText = PlayfairCipherFun(inputText, key);
+    }
+
+    private void DecryptText()
+    {
+        outputText = PlayfairDecryptFun(inputText, key);
+    }
+
+    private string PlayfairCipherFun(string text, string key)
+    {
+        char[,] playfairMatrix = GeneratePlayfairMatrix(key);
+
+        StringBuilder result = new StringBuilder();
+
+        for (int i = 0; i < text.Length; i += 2)
+        {
+            char char1 = text[i];
+            char char2 = (i + 1 < text.Length) ? text[i + 1] : 'X';
+
+            string encryptedPair = PlayfairEncryptPair(playfairMatrix, char1, char2);
+            result.Append(encryptedPair);
+        }
+
+        return result.ToString();
+    }
+
+    private string PlayfairDecryptFun(string text, string key)
+    {
+        char[,] playfairMatrix = GeneratePlayfairMatrix(key);
+
+        StringBuilder result = new StringBuilder();
+
+        for (int i = 0; i < text.Length; i += 2)
+        {
+            char char1 = text[i];
+            char char2 = (i + 1 < text.Length) ? text[i + 1] : 'X';
+
+            string decryptedPair = PlayfairDecryptPair(playfairMatrix, char1, char2);
+            result.Append(decryptedPair);
+        }
+
+        return result.ToString();
+    }
+
+    private string PlayfairEncryptPair(char[,] matrix, char char1, char char2)
+    {
+        int[] char1Pos = GetMatrixPosition(matrix, char1);
+        int[] char2Pos = GetMatrixPosition(matrix, char2);
+
+        int row1 = char1Pos[0];
+        int col1 = char1Pos[1];
+        int row2 = char2Pos[0];
+        int col2 = char2Pos[1];
+
+        if (row1 == row2)
+        {
+            col1 = (col1 + 1) % 5;
+            col2 = (col2 + 1) % 5;
+        }
+        else if (col1 == col2)
+        {
+            row1 = (row1 + 1) % 5;
+            row2 = (row2 + 1) % 5;
+        }
+        else
+        {
+            int temp = col1;
+            col1 = col2;
+            col2 = temp;
+        }
+
+        char encryptedChar1 = matrix[row1, col1];
+        char encryptedChar2 = matrix[row2, col2];
+
+        return $"{encryptedChar1}{encryptedChar2}";
+    }
+
+    private string PlayfairDecryptPair(char[,] matrix, char char1, char char2)
+    {
+        int[] char1Pos = GetMatrixPosition(matrix, char1);
+        int[] char2Pos = GetMatrixPosition(matrix, char2);
+
+        int row1 = char1Pos[0];
+        int col1 = char1Pos[1];
+        int row2 = char2Pos[0];
+        int col2 = char2Pos[1];
+
+        if (row1 == row2)
+        {
+            col1 = (col1 - 1 + 5) % 5;
+            col2 = (col2 - 1 + 5) % 5;
+        }
+        else if (col1 == col2)
+        {
+            row1 = (row1 - 1 + 5) % 5;
+            row2 = (row2 - 1 + 5) % 5;
+        }
+        else
+        {
+            int temp = col1;
+            col1 = col2;
+            col2 = temp;
+        }
+
+        char decryptedChar1 = matrix[row1, col1];
+        char decryptedChar2 = matrix[row2, col2];
+
+        return $"{decryptedChar1}{decryptedChar2}";
+    }
+
+    private int[] GetMatrixPosition(char[,] matrix, char character)
+    {
+        int[] position = new int[2];
+
+        for (int row = 0; row < 5; row++)
+        {
+            for (int col = 0; col < 5; col++)
+            {
+                if (matrix[row, col] == character)
+                {
+                    position[0] = row;
+                    position[1] = col;
+                    return position;
+                }
+            }
+        }
+
+        return position;
+    }
+
+    private char[,] GeneratePlayfairMatrix(string key)
+    {
+        string keyWithoutDuplicates = new string(key.Distinct().ToArray());
+        string alphabet = "abcdefghiklmnopqrstuvwxyz";
+        string keyAndAlphabet = keyWithoutDuplicates + alphabet;
+
+        char[,] matrix = new char[5, 5];
+        int index = 0;
+
+        for (int row = 0; row < 5; row++)
+        {
+            for (int col = 0; col < 5; col++)
+            {
+                matrix[row, col] = keyAndAlphabet[index];
+                index++;
+            }
+        }
+
+        return matrix;
+    }
+}

@@ -1,0 +1,84 @@
+﻿@page "/trithemiuscipher"
+@using CipherProject.Data;
+@using System;
+@using System.Text;
+
+<h3>Szyfr Tritemiusza</h3>
+
+<input @bind="inputText" placeholder="Wprowadź tekst">
+
+<button @onclick="EncryptText">Zaszyfruj</button>
+<button @onclick="DecryptText">Odszyfruj</button>
+
+<p>
+    <strong>Wynik:</strong> @outputText
+</p>
+
+@code {
+    private string inputText = "";
+    private string outputText = "";
+    private int shift = 3; // Przesunięcie dla szyfru Tritemiusza
+    private CharactersList charactersList = new CharactersList();
+
+    private void EncryptText()
+    {
+        outputText = TritemiusCipherFun(inputText);
+    }
+
+    private void DecryptText()
+    {
+        outputText = TritemiusDecipherFun(inputText);
+    }
+
+    private string TritemiusCipherFun(string text)
+    {
+        StringBuilder result = new StringBuilder();
+
+        foreach (char character in text)
+        {
+            if (character != ' ')
+            {
+                string characterString = character.ToString().ToLower(); // Zamiana na małe litery
+                int index = charactersList.PolishCharacters.IndexOf(characterString);
+
+                if (index >= 0)
+                {
+                    int newIndex = (index + shift) % charactersList.PolishCharacters.Count;
+                    result.Append(charactersList.PolishCharacters[newIndex]);
+                }
+            }
+            else
+            {
+                result.Append(" "); // Pozostawia spacje bez zmian
+            }
+        }
+
+        return result.ToString();
+    }
+
+    private string TritemiusDecipherFun(string text)
+    {
+        StringBuilder result = new StringBuilder();
+
+        foreach (char character in text)
+        {
+            if (character != ' ')
+            {
+                string characterString = character.ToString().ToLower(); // Zamiana na małe litery
+                int index = charactersList.PolishCharacters.IndexOf(characterString);
+
+                if (index >= 0)
+                {
+                    int newIndex = (index - shift + charactersList.PolishCharacters.Count) % charactersList.PolishCharacters.Count;
+                    result.Append(charactersList.PolishCharacters[newIndex]);
+                }
+            }
+            else
+            {
+                result.Append(" "); // Pozostawia spacje bez zmian
+            }
+        }
+
+        return result.ToString();
+    }
+}
